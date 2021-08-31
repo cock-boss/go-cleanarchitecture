@@ -2,19 +2,14 @@ package interfaces
 
 import (
 	"fmt"
+	"go-cleanarchitecture/usecases"
 	"io"
 	"net/http"
 	"strconv"
-	"usecases"
 )
 
-type OrderInteractor interface {
-	Items(userId, orderId int) ([]usecases.Item, error)
-	Add(userId, orderId, itemId int) error
-}
-
 type WebserviceHandler struct {
-	OrderInteractor OrderInteractor
+	OrderInteractor usecases.OrderInteractor
 }
 
 func (handler WebserviceHandler) ShowOrder(res http.ResponseWriter, req *http.Request) {

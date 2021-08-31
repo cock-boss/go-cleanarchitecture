@@ -1,12 +1,12 @@
 package interfaces_test
 
 import (
-	"domain"
 	_ "fmt"
-	"infrastructure"
-	"interfaces"
+	"go-cleanarchitecture/domain"
+	"go-cleanarchitecture/infrastructure"
+	"go-cleanarchitecture/interfaces"
+	"go-cleanarchitecture/usecases"
 	"testing"
-	"usecases"
 )
 
 func Test_UserRepository(t *testing.T) {

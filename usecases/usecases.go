@@ -1,8 +1,9 @@
 package usecases
 
 import (
-	"domain"
 	"fmt"
+	"go-cleanarchitecture.bak/src/usecases"
+	"go-cleanarchitecture/domain"
 )
 
 type UserRepository interface {
@@ -16,25 +17,40 @@ type User struct {
 	Customer domain.Customer
 }
 
-type Item struct {
-	Id    int
-	Name  string
-	Value float64
-}
+//type Item struct {
+//	Id    int
+//	Name  string
+//	Value float64
+//}
 
 type Logger interface {
 	Log(args ...interface{})
 }
 
-type OrderInteractor struct {
+type OrderInteractor interface {
+	Items(userId, orderId int) ([]usecases.Item, error)
+	Add(userId, orderId, itemId int) error
+}
+
+
+type orderInteractor struct {
 	UserRepository  UserRepository
 	OrderRepository domain.OrderRepository
 	ItemRepository  domain.ItemRepository
 	Logger          Logger
 }
 
-func (interactor *OrderInteractor) Items(userId, orderId int) ([]Item, error) {
-	var items []Item
+func New(userRepo UserRepository, orderRepo domain.OrderRepository, itemRepo domain.ItemRepository, log Logger) OrderInteractor {
+	it := new(orderInteractor)
+	it.UserRepository = userRepo
+	it.OrderRepository = orderRepo
+	it.ItemRepository = itemRepo
+	it.Logger = log
+	return it
+}
+
+func (interactor *orderInteractor) Items(userId, orderId int) ([]usecases.Item, error) {
+	var items []usecases.Item
 	user := interactor.UserRepository.FindById(userId)
 	order := interactor.OrderRepository.FindById(orderId)
 	if user.Customer.Id != order.Customer.Id {
@@ -47,17 +63,17 @@ func (interactor *OrderInteractor) Items(userId, orderId int) ([]Item, error) {
 			order.Id,
 			order.Customer.Id)
 		interactor.Logger.Log(err.Error())
-		items = make([]Item, 0)
+		items = make([]usecases.Item, 0)
 		return items, err
 	}
-	items = make([]Item, len(order.Items))
+	items = make([]usecases.Item, len(order.Items))
 	for i, item := range order.Items {
-		items[i] = Item{item.Id, item.Name, item.Value}
+		items[i] = usecases.Item{item.Id, item.Name, item.Value}
 	}
 	return items, nil
 }
 
-func (interactor *OrderInteractor) Add(userId, orderId, itemId int) error {
+func (interactor *orderInteractor) Add(userId, orderId, itemId int) error {
 	var message string
 	user := interactor.UserRepository.FindById(userId)
 	order := interactor.OrderRepository.FindById(orderId)
@@ -96,7 +112,7 @@ func (interactor *OrderInteractor) Add(userId, orderId, itemId int) error {
 }
 
 type AdminOrderInteractor struct {
-	OrderInteractor
+	orderInteractor
 }
 
 func (interactor *AdminOrderInteractor) Add(userId, orderId, itemId int) error {

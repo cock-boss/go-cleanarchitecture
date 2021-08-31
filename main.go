@@ -1,26 +1,27 @@
 package main
 
 import (
-	"usecases"
-	"interfaces"
-	"infrastructure"
+	"go-cleanarchitecture/infrastructure"
+	"go-cleanarchitecture/interfaces"
+	"go-cleanarchitecture/usecases"
 	"net/http"
 )
 
 func main() {
 	dbHandler := infrastructure.NewSqliteHandler("/var/tmp/production.sqlite")
 
-	handlers := make(map[string] interfaces.DbHandler)
+	handlers := make(map[string]interfaces.DbHandler)
 	handlers["DbUserRepo"] = dbHandler
 	handlers["DbCustomerRepo"] = dbHandler
 	handlers["DbItemRepo"] = dbHandler
 	handlers["DbOrderRepo"] = dbHandler
 
-	orderInteractor := new(usecases.OrderInteractor)
-	orderInteractor.UserRepository = interfaces.NewDbUserRepo(handlers)
-	orderInteractor.ItemRepository = interfaces.NewDbItemRepo(handlers)
-	orderInteractor.OrderRepository = interfaces.NewDbOrderRepo(handlers)
-	orderInteractor.Logger = new(infrastructure.Logger)
+
+	userRepo := interfaces.NewDbUserRepo(handlers)
+	itemRepo := interfaces.NewDbItemRepo(handlers)
+	orderRepo := interfaces.NewDbOrderRepo(handlers)
+	logger := new(infrastructure.Logger)
+	orderInteractor := usecases.New(userRepo, orderRepo, itemRepo, logger)
 
 	webserviceHandler := interfaces.WebserviceHandler{}
 	webserviceHandler.OrderInteractor = orderInteractor
